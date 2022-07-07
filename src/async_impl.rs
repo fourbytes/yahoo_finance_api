@@ -1,6 +1,7 @@
-use super::*;
-
+use time::{Date, OffsetDateTime, UtcOffset};
 use async_compat::CompatExt;
+
+use super::*;
 
 impl YahooConnector {
     /// Retrieve the quotes of the last day for the given ticker
@@ -16,8 +17,8 @@ impl YahooConnector {
     pub async fn get_quote_history(
         &self,
         ticker: &str,
-        start: DateTime<Utc>,
-        end: DateTime<Utc>,
+        start: OffsetDateTime,
+        end: OffsetDateTime,
     ) -> Result<YResponse, YahooError> {
         self.get_quote_history_interval(ticker, start, end, "1d")
             .await
@@ -43,16 +44,16 @@ impl YahooConnector {
     pub async fn get_quote_history_interval(
         &self,
         ticker: &str,
-        start: DateTime<Utc>,
-        end: DateTime<Utc>,
+        start: OffsetDateTime,
+        end: OffsetDateTime,
         interval: &str,
     ) -> Result<YResponse, YahooError> {
         let url = format!(
             YCHART_PERIOD_QUERY!(),
             url = self.url,
             symbol = ticker,
-            start = start.timestamp(),
-            end = end.timestamp(),
+            start = start.to_offset(UtcOffset::UTC).unix_timestamp(),
+            end = end.to_offset(UtcOffset::UTC).unix_timestamp(),
             interval = interval
         );
         YResponse::from_json(send_request(&url).await?)
@@ -130,8 +131,8 @@ async fn send_scrape_request(url: &str) -> Result<serde_json::Value, YahooError>
 
 #[cfg(test)]
 mod tests {
+    use time::macros::datetime;
     use super::*;
-    use chrono::TimeZone;
 
     #[test]
     fn test_get_single_quote() {
@@ -153,8 +154,8 @@ mod tests {
     #[test]
     fn test_strange_api_responses() {
         let provider = YahooConnector::new();
-        let start = Utc.ymd(2019, 7, 3).and_hms_milli(0, 0, 0, 0);
-        let end = Utc.ymd(2020, 7, 4).and_hms_milli(23, 59, 59, 999);
+        let start = datetime!(2019-7-3 00:00 UTC); // Utc.ymd(2019, 7, 3).and_hms_milli(0, 0, 0, 0);
+        let end = datetime!(2020-7-4 23:59:59.999 UTC); // Utc.ymd(2020, 7, 4).and_hms_milli(23, 59, 59, 999);
         let resp = tokio_test::block_on(provider.get_quote_history("IBM", start, end)).unwrap();
 
         assert_eq!(&resp.chart.result[0].meta.symbol, "IBM");
@@ -179,8 +180,8 @@ mod tests {
     #[test]
     fn test_get_quote_history() {
         let provider = YahooConnector::new();
-        let start = Utc.ymd(2020, 1, 1).and_hms_milli(0, 0, 0, 0);
-        let end = Utc.ymd(2020, 1, 31).and_hms_milli(23, 59, 59, 999);
+        let start = datetime!(2020-1-1 00:00 UTC);
+        let end = datetime!(2020-1-31 23:59:59.999 UTC);
         let resp = tokio_test::block_on(provider.get_quote_history("AAPL", start, end));
         if resp.is_ok() {
             let resp = resp.unwrap();
@@ -204,8 +205,8 @@ mod tests {
     #[test]
     fn test_get() {
         let provider = YahooConnector::new();
-        let start = Utc.ymd(2019, 1, 1).and_hms_milli(0, 0, 0, 0);
-        let end = Utc.ymd(2020, 1, 31).and_hms_milli(23, 59, 59, 999);
+        let start = datetime!(2019-1-1 00:00 UTC);
+        let end = datetime!(2020-1-31 23:59:59.999 UTC);
         let response =
             tokio_test::block_on(provider.get_quote_history_interval("AAPL", start, end, "1mo"))
                 .unwrap();
@@ -243,8 +244,8 @@ mod tests {
     #[test]
     fn test_mutual_fund_history() {
         let provider = YahooConnector::new();
-        let start = Utc.ymd(2020, 1, 1).and_hms_milli(0, 0, 0, 0);
-        let end = Utc.ymd(2020, 1, 31).and_hms_milli(23, 59, 59, 999);
+        let start = datetime!(2020-1-1 00:00 UTC);
+        let end = datetime!(2020-1-31 23:59:59.999 UTC);
         let resp = tokio_test::block_on(provider.get_quote_history("VTSAX", start, end));
         if resp.is_ok() {
             let resp = resp.unwrap();

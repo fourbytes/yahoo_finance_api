@@ -16,8 +16,7 @@
 # Get the latest available quote:
 ```rust
 use yahoo_finance_api as yahoo;
-use std::time::{Duration, UNIX_EPOCH};
-use chrono::prelude::*;
+use time::OffsetDateTime;
 use tokio_test;
 
 fn main() {
@@ -27,22 +26,21 @@ fn main() {
     // extract just the latest valid quote summery
     // including timestamp,open,close,high,low,volume
     let quote = response.last_quote().unwrap();
-    let time: DateTime<Utc> =
-        DateTime::from(UNIX_EPOCH + Duration::from_secs(quote.timestamp));
-    println!(\"At {} quote price of Apple was {}\", time.to_rfc3339(), quote.close);
+    let time = OffsetDateTime::from_unix_timestamp(quote.timestamp as i64).unwrap();
+    println!(\"At {:?} quote price of Apple was {}\", time, quote.close);
 }
 ```
 # Get history of quotes for given time period:
 ```rust
 use yahoo_finance_api as yahoo;
 use std::time::{Duration, UNIX_EPOCH};
-use chrono::{Utc,TimeZone};
+use time::macros::datetime;
 use tokio_test;
 
 fn main() {
     let provider = yahoo::YahooConnector::new();
-    let start = Utc.ymd(2020, 1, 1).and_hms_milli(0, 0, 0, 0);
-    let end = Utc.ymd(2020, 1, 31).and_hms_milli(23, 59, 59, 999);
+    let start = datetime!(2020-1-1 00:00 UTC);
+    let end = datetime!(2020-1-31 23:59:59.999 UTC);
     // returns historic quotes with daily interval
     let resp = tokio_test::block_on(provider.get_quote_history(\"AAPL\", start, end)).unwrap();
     let quotes = resp.quotes().unwrap();
@@ -54,7 +52,6 @@ fn main() {
 ```rust
 use yahoo_finance_api as yahoo;
 use std::time::{Duration, UNIX_EPOCH};
-use chrono::{Utc,TimeZone};
 use tokio_test;
 
 fn main() {
@@ -95,7 +92,7 @@ returning `None` if the field found missing in the response.
 ```rust
 use yahoo_finance_api as yahoo;
 use std::time::{Duration, UNIX_EPOCH};
-use chrono::prelude::*;
+use time::OffsetDateTime;
 use tokio_test;
 
 fn main() {
@@ -105,9 +102,9 @@ fn main() {
     // extract just the latest valid quote summery
     // including timestamp,open,close,high,low,volume
     let quote = response.last_quote().unwrap();
-    let time: DateTime<Utc> =
-        DateTime::from(UNIX_EPOCH + Duration::from_secs(quote.timestamp));
-    println!(\"At {} quote price of Apple was {}\", time.to_rfc3339(), quote.close);
+    let time: OffsetDateTime =
+        OffsetDateTime::from_unix_timestamp(quote.timestamp).unwrap();
+    println!(\"At {:?} quote price of Apple was {}\", time, quote.close);
 }
 ```
 //!
@@ -115,13 +112,14 @@ Get history of quotes for given time period:
 ```rust
 use yahoo_finance_api as yahoo;
 use std::time::{Duration, UNIX_EPOCH};
-use chrono::{Utc,TimeZone};
+use time::macros::datetime;
 use tokio_test;
 
 fn main() {
     let provider = yahoo::YahooConnector::new();
-    let start = Utc.ymd(2020, 1, 1).and_hms_milli(0, 0, 0, 0);
-    let end = Utc.ymd(2020, 1, 31).and_hms_milli(23, 59, 59, 999);
+    let start = datetime!(2020-1-1 00:00 UTC);
+    let end = datetime!(2020-1-31 23:59:59.999 UTC);
+
     // returns historic quotes with daily interval
     let resp = provider.get_quote_history(\"AAPL\", start, end).unwrap();
     let quotes = resp.quotes().unwrap();
@@ -167,7 +165,6 @@ mod search_result;
 mod yahoo_error;
 mod financials;
 
-use chrono::{DateTime, Utc};
 use reqwest::StatusCode;
 
 pub use financials::YFinancialsResponse;

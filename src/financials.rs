@@ -1,8 +1,11 @@
 use std::collections::HashMap;
 
 use serde::Deserialize;
+use time::Date;
 
 use super::YahooError;
+
+time::serde::format_description!(iso8601_date, Date, "[year repr:full]-[month repr:numerical]-[day padding:zero]");
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "PascalCase")]
@@ -25,7 +28,8 @@ pub struct TimeSeries {
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct AnnualBasicAverageShares {
-    // pub as_of_date: chrono::NaiveDate,
+    #[serde(with = "iso8601_date")]
+    pub as_of_date: time::Date,
     pub currency_code: String,
     pub reported_value: ReportedValue,
 }
