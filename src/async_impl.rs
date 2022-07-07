@@ -119,7 +119,7 @@ async fn send_scrape_request(url: &str) -> Result<serde_json::Value, YahooError>
                 .and_then(|json| json.get("stores"))
                 .unwrap()
                 .clone();
-            // println!("{}", json);
+            // println!("{}", stores);
             serde_json::from_value(stores).map_err(|_| YahooError::InvalidJson)
         } else {
             Err(YahooError::FetchFailed("failed to find json in html".to_string()))
@@ -147,8 +147,10 @@ mod tests {
     #[test]
     fn test_get_financials() {
         let provider = YahooConnector::new();
-        let response = tokio_test::block_on(provider.get_financials("HNL.DE")).unwrap();
-        assert_ne!(response.shares_on_issue(), None);
+        for target in ["HNL.DE", "LCY.AX"] {
+            let _response = tokio_test::block_on(provider.get_financials(target)).unwrap();
+            // assert_ne!(response.shares_on_issue(), None);
+        }
     }
 
     #[test]

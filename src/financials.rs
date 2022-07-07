@@ -22,7 +22,7 @@ pub struct YQuoteTimeSeriesStore {
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct TimeSeries {
-    pub annual_basic_average_shares: Vec<AnnualBasicAverageShares>,
+    pub annual_basic_average_shares: Vec<Option<AnnualBasicAverageShares>>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -48,6 +48,6 @@ impl YFinancialsResponse {
     pub fn shares_on_issue(&self) -> Option<i64> {
         self.quote_time_series_store.time_series.annual_basic_average_shares
             .last()
-            .map(|s| s.reported_value.raw)
+            .and_then(|s| s.as_ref().map(|s| s.reported_value.raw))
     }
 }
