@@ -162,12 +162,15 @@ fn main() {
 "
 )]
 
-use chrono::{DateTime, Utc};
-use reqwest::StatusCode;
-
 mod quotes;
 mod search_result;
 mod yahoo_error;
+mod financials;
+
+use chrono::{DateTime, Utc};
+use reqwest::StatusCode;
+
+pub use financials::YFinancialsResponse;
 pub use quotes::{
     AdjClose, PeriodInfo, Quote, QuoteBlock, QuoteList, TradingPeriod, YChart, YMetaData,
     YQuoteBlock, YResponse, Split, Dividend
@@ -175,6 +178,7 @@ pub use quotes::{
 pub use search_result::{YNewsItem, YQuoteItem, YQuoteItemOpt, YSearchResult, YSearchResultOpt};
 pub use yahoo_error::YahooError;
 
+const YSCRAPE_URL: &str = "https://finance.yahoo.com/quote";
 const YCHART_URL: &str = "https://query1.finance.yahoo.com/v8/finance/chart";
 const YSEARCH_URL: &str = "https://query2.finance.yahoo.com/v1/finance/search";
 
@@ -187,6 +191,11 @@ macro_rules! YCHART_PERIOD_QUERY {
 macro_rules! YCHART_RANGE_QUERY {
     () => {
         "{url}/{symbol}?symbol={symbol}&interval={interval}&range={range}&events=div|split"
+    };
+}
+macro_rules! YFINANCIALS_QUERY {
+    () => {
+        "{url}/{symbol}/financials"
     };
 }
 macro_rules! YTICKER_QUERY {
@@ -212,8 +221,4 @@ impl YahooConnector {
     }
 }
 
-#[cfg(not(feature = "blocking"))]
 pub mod async_impl;
-
-#[cfg(feature = "blocking")]
-pub mod blocking_impl;

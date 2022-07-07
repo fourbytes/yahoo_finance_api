@@ -58,6 +58,19 @@ impl YahooConnector {
         YResponse::from_json(send_request(&url).await?)
     }
 
+    pub async fn get_financials(
+        &self,
+        ticker: &str
+    ) -> Result<YFinancialsResponse, YahooError> {
+        let url = format!(
+            YFINANCIALS_QUERY!(),
+            url = YSCRAPE_URL,
+            symbol = ticker
+        );
+        YFinancialsResponse::from_json(send_scrape_request(&url).await?)
+
+    }
+
     /// Retrieve the list of quotes found searching a given name
     pub async fn search_ticker_opt(&self, name: &str) -> Result<YSearchResultOpt, YahooError> {
         let url = format!(YTICKER_QUERY!(), url = self.search_url, name = name);
@@ -84,6 +97,37 @@ async fn send_request(url: &str) -> Result<serde_json::Value, YahooError> {
     }
 }
 
+/// Send request to yahoo! finance server and transform response to JSON value
+async fn send_scrape_request(url: &str) -> Result<serde_json::Value, YahooError> {
+    let resp = reqwest::get(url).compat().await;
+    if resp.is_err() {
+        return Err(YahooError::ConnectionFailed);
+    }
+    let resp = resp.unwrap();
+    let status = resp.status();
+    let html_text = resp.text().await.unwrap();
+    let json_str = html_text.split("root.App.main = ").nth(1)
+        .and_then(|o| o.split("(this)").next())
+        .and_then(|o| o.split(";\n").next())
+        .map(|o| o.trim());
+    match status {
+        StatusCode::OK => if let Some(json_str) = json_str {
+            let json = serde_json::from_str::<serde_json::Value>(json_str).unwrap();
+            let stores = json.get("context")
+                .and_then(|json| json.get("dispatcher"))
+                .and_then(|json| json.get("stores"))
+                .unwrap()
+                .clone();
+            // println!("{}", json);
+            serde_json::from_value(stores).map_err(|_| YahooError::InvalidJson)
+        } else {
+            Err(YahooError::FetchFailed("failed to find json in html".to_string()))
+        },
+        status => Err(YahooError::FetchFailed(format!("Status Code: {}", status))),
+    }
+    
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -97,6 +141,13 @@ mod tests {
         assert_eq!(&response.chart.result[0].meta.range, "1mo");
         assert_eq!(&response.chart.result[0].meta.data_granularity, "1d");
         let _ = response.last_quote().unwrap();
+    }
+
+    #[test]
+    fn test_get_financials() {
+        let provider = YahooConnector::new();
+        let response = tokio_test::block_on(provider.get_financials("HNL.DE")).unwrap();
+        assert_ne!(response.shares_on_issue(), None);
     }
 
     #[test]
