@@ -4,7 +4,7 @@ use rust_decimal::Decimal;
 use serde::de::{Visitor, MapAccess, Deserialize, Deserializer};
 
 #[derive(Debug)]
-pub struct IntegerValue(Option<i64>);
+pub struct IntegerValue(pub Option<i64>);
 
 struct IntegerValueVisitor;
 
@@ -39,7 +39,7 @@ impl<'de> Deserialize<'de> for IntegerValue {
 }
 
 #[derive(Debug)]
-pub struct DecimalValue(Option<Decimal>);
+pub struct DecimalValue(pub Option<Decimal>);
 
 struct DecimalValueVisitor;
 
