@@ -167,7 +167,7 @@ mod tests {
     #[test]
     fn test_get_statistics() {
         let provider = YahooConnector::new();
-        for target in ["LCY.AX"] {
+        for target in ["LEL.AX"] {
             let _response = tokio_test::block_on(provider.get_statistics(target)).unwrap();
             // assert_ne!(response.shares_on_issue(), None);
         }

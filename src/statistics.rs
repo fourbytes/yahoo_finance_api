@@ -41,7 +41,7 @@ pub struct FinancialData {
     pub current_ratio: DecimalValue,
     pub debt_to_equity: DecimalValue,
     pub ebitda: IntegerValue,
-    pub financial_currency: String,
+    pub financial_currency: Option<String>,
     pub free_cashflow: IntegerValue,
     pub operating_cashflow: IntegerValue,
     pub quick_ratio: DecimalValue,
