@@ -2,7 +2,7 @@ use serde::Deserialize;
 use time::OffsetDateTime;
 
 use super::YahooError;
-use crate::utils::{IntegerValue, DecimalValue};
+use crate::utils::{IntegerValue, DecimalValue, OffsetDateTimeValue};
 
 time::serde::format_description!(iso8601_date, Date, "[year repr:full]-[month repr:numerical]-[day padding:zero]");
 
@@ -26,9 +26,9 @@ pub struct KeyStatistics {
     pub float_shares: IntegerValue,
     pub held_percent_insiders: DecimalValue,
     pub held_percent_institutions: DecimalValue,
-    // pub most_recent_quarter: Date,
+    pub most_recent_quarter: OffsetDateTimeValue,
     pub net_income_to_common: IntegerValue,
-    // pub next_fiscal_year_end: Date,
+    pub next_fiscal_year_end: OffsetDateTimeValue,
     pub price_to_book: DecimalValue,
     pub shares_outstanding: IntegerValue,
     pub total_assets: IntegerValue,
