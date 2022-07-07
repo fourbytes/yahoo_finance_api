@@ -164,10 +164,13 @@ mod quotes;
 mod search_result;
 mod yahoo_error;
 mod financials;
+mod statistics;
+mod utils;
 
 use reqwest::StatusCode;
 
 pub use financials::YFinancialsResponse;
+pub use statistics::YStatisticsResponse;
 pub use quotes::{
     AdjClose, PeriodInfo, Quote, QuoteBlock, QuoteList, TradingPeriod, YChart, YMetaData,
     YQuoteBlock, YResponse, Split, Dividend
@@ -193,6 +196,11 @@ macro_rules! YCHART_RANGE_QUERY {
 macro_rules! YFINANCIALS_QUERY {
     () => {
         "{url}/{symbol}/financials"
+    };
+}
+macro_rules! YSTATISTICS_QUERY {
+    () => {
+        "{url}/{symbol}/key-statistics"
     };
 }
 macro_rules! YTICKER_QUERY {

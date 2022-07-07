@@ -69,7 +69,18 @@ impl YahooConnector {
             symbol = ticker
         );
         YFinancialsResponse::from_json(send_scrape_request(&url).await?)
+    }
 
+    pub async fn get_statistics(
+        &self,
+        ticker: &str
+    ) -> Result<YStatisticsResponse, YahooError> {
+        let url = format!(
+            YSTATISTICS_QUERY!(),
+            url = YSCRAPE_URL,
+            symbol = ticker
+        );
+        YStatisticsResponse::from_json(send_scrape_request(&url).await?)
     }
 
     /// Retrieve the list of quotes found searching a given name
@@ -149,6 +160,15 @@ mod tests {
         let provider = YahooConnector::new();
         for target in ["HNL.DE", "LCY.AX"] {
             let _response = tokio_test::block_on(provider.get_financials(target)).unwrap();
+            // assert_ne!(response.shares_on_issue(), None);
+        }
+    }
+
+    #[test]
+    fn test_get_statistics() {
+        let provider = YahooConnector::new();
+        for target in ["LCY.AX"] {
+            let _response = tokio_test::block_on(provider.get_statistics(target)).unwrap();
             // assert_ne!(response.shares_on_issue(), None);
         }
     }
