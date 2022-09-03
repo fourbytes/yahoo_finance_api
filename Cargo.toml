@@ -13,11 +13,11 @@ include = ["src/**/*", "LICENSE-*", "README.md"]
 
 [dependencies]
 reqwest = { version = "0.11", features = ["json", "rustls"] }
-serde_json = { version = "1", features = ["float_roundtrip"] }
+serde_json = { version = "1", features = ["arbitrary_precision"] }
 serde = { version = "1.0", features = ["derive"] }
 time = { version = "0.3", features = ["serde", "serde-human-readable", "macros"] }
 async-compat = "0.2"
-rust_decimal = { version = "1" }
+rust_decimal = { version = "1", features = ["serde", "serde-with-arbitrary-precision"] }
 
 [dev-dependencies]
 tokio-test = "0.4"
