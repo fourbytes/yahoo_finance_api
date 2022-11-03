@@ -9,7 +9,7 @@ time::serde::format_description!(iso8601_date, Date, "[year repr:full]-[month re
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "PascalCase")]
 pub struct YStatisticsResponse {
-    pub quote_summary_store: YQuoteSummaryStore
+    pub quote_summary_store: Option<YQuoteSummaryStore>
 }
 
 #[derive(Deserialize, Debug)]
@@ -26,19 +26,19 @@ pub struct KeyStatistics {
     pub float_shares: Option<IntegerValue>,
     pub held_percent_insiders: Option<DecimalValue>,
     pub held_percent_institutions: Option<DecimalValue>,
-    pub most_recent_quarter: OffsetDateTimeValue,
-    pub net_income_to_common: IntegerValue,
-    pub next_fiscal_year_end: OffsetDateTimeValue,
-    pub price_to_book: DecimalValue,
-    pub shares_outstanding: IntegerValue,
-    pub total_assets: IntegerValue,
-    pub trailing_eps: DecimalValue,
+    pub most_recent_quarter: Option<OffsetDateTimeValue>,
+    pub net_income_to_common: Option<IntegerValue>,
+    pub next_fiscal_year_end: Option<OffsetDateTimeValue>,
+    pub price_to_book: Option<DecimalValue>,
+    pub shares_outstanding: Option<IntegerValue>,
+    pub total_assets: Option<IntegerValue>,
+    pub trailing_eps: Option<DecimalValue>,
 }
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct FinancialData {
-    pub current_ratio: DecimalValue,
+    pub current_ratio: Option<DecimalValue>,
     pub debt_to_equity: DecimalValue,
     pub ebitda: IntegerValue,
     pub financial_currency: Option<String>,
