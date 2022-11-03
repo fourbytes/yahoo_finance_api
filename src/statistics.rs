@@ -23,7 +23,7 @@ pub struct YQuoteSummaryStore {
 #[serde(rename_all = "camelCase")]
 pub struct KeyStatistics {
     pub enterprise_value: Option<IntegerValue>,
-    pub float_shares: IntegerValue,
+    pub float_shares: Option<IntegerValue>,
     pub held_percent_insiders: DecimalValue,
     pub held_percent_institutions: DecimalValue,
     pub most_recent_quarter: OffsetDateTimeValue,
