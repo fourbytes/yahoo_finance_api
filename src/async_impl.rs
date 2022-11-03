@@ -101,7 +101,7 @@ impl YahooConnector {
     }
 
     /// https://query1.finance.yahoo.com/ws/fundamentals-timeseries/v1/finance/timeseries/NFL.AX?lang=en-AU&region=AU&symbol=NFL.AX&padTimeSeries=true&type=quarterlyTotalAssets,trailingTotalAssets,quarterlyStockholdersEquity,trailingStockholdersEquity,quarterlyGainsLossesNotAffectingRetainedEarnings,trailingGainsLossesNotAffectingRetainedEarnings,quarterlyRetainedEarnings,trailingRetainedEarnings,quarterlyCapitalStock,trailingCapitalStock,quarterlyTotalLiabilitiesNetMinorityInterest,trailingTotalLiabilitiesNetMinorityInterest,quarterlyTotalNonCurrentLiabilitiesNetMinorityInterest,trailingTotalNonCurrentLiabilitiesNetMinorityInterest,quarterlyOtherNonCurrentLiabilities,trailingOtherNonCurrentLiabilities,quarterlyNonCurrentDeferredRevenue,trailingNonCurrentDeferredRevenue,quarterlyNonCurrentDeferredTaxesLiabilities,trailingNonCurrentDeferredTaxesLiabilities,quarterlyLongTermDebt,trailingLongTermDebt,quarterlyCurrentLiabilities,trailingCurrentLiabilities,quarterlyOtherCurrentLiabilities,trailingOtherCurrentLiabilities,quarterlyCurrentDeferredRevenue,trailingCurrentDeferredRevenue,quarterlyCurrentAccruedExpenses,trailingCurrentAccruedExpenses,quarterlyIncomeTaxPayable,trailingIncomeTaxPayable,quarterlyAccountsPayable,trailingAccountsPayable,quarterlyCurrentDebt,trailingCurrentDebt,quarterlyTotalNonCurrentAssets,trailingTotalNonCurrentAssets,quarterlyOtherNonCurrentAssets,trailingOtherNonCurrentAssets,quarterlyOtherIntangibleAssets,trailingOtherIntangibleAssets,quarterlyGoodwill,trailingGoodwill,quarterlyInvestmentsAndAdvances,trailingInvestmentsAndAdvances,quarterlyNetPPE,trailingNetPPE,quarterlyAccumulatedDepreciation,trailingAccumulatedDepreciation,quarterlyGrossPPE,trailingGrossPPE,quarterlyCurrentAssets,trailingCurrentAssets,quarterlyOtherCurrentAssets,trailingOtherCurrentAssets,quarterlyInventory,trailingInventory,quarterlyAccountsReceivable,trailingAccountsReceivable,quarterlyCashCashEquivalentsAndShortTermInvestments,trailingCashCashEquivalentsAndShortTermInvestments,quarterlyOtherShortTermInvestments,trailingOtherShortTermInvestments,quarterlyCashAndCashEquivalents,trailingCashAndCashEquivalents&merge=false&period1=493590046&period2=1667449537&corsDomain=au.finance.yahoo.com
-    pub async fn get_financials_timeseries(&self, symbol: &str, period: FinancialsPeriod) -> Result<HashMap<String, Vec<(OffsetDateTime, f64)>>, YahooError> {
+    pub async fn get_financials_timeseries(&self, symbol: &str, period: FinancialsPeriod) -> Result<HashMap<Date, FinancialReport>, YahooError> {
         let ts = OffsetDateTime::now_utc().unix_timestamp();
         let mut url: Url = format!("https://query1.finance.yahoo.com/ws/fundamentals-timeseries/v1/finance/timeseries/{symbol}").parse().unwrap();
         {
@@ -111,9 +111,9 @@ impl YahooConnector {
             query.append_pair("symbol", symbol);
             query.append_pair("padTimeSeries", "true");
             query.append_pair("type", match period {
-                FinancialsPeriod::Quarterly => "quarterlyTotalAssets,quarterlyStockholdersEquity,quarterlyGainsLossesNotAffectingRetainedEarnings,quarterlyRetainedEarnings,quarterlyCapitalStock,quarterlyTotalLiabilitiesNetMinorityInterest,quarterlyTotalNonCurrentLiabilitiesNetMinorityInterest,quarterlyOtherNonCurrentLiabilities,quarterlyNonCurrentDeferredRevenue,quarterlyNonCurrentDeferredTaxesLiabilities,quarterlyLongTermDebt,quarterlyCurrentLiabilities,quarterlyOtherCurrentLiabilities,quarterlyCurrentDeferredRevenue,quarterlyCurrentAccruedExpenses,quarterlyIncomeTaxPayable,quarterlyAccountsPayable,quarterlyCurrentDebt,quarterlyTotalNonCurrentAssets,quarterlyOtherNonCurrentAssets,quarterlyOtherIntangibleAssets,quarterlyGoodwill,quarterlyInvestmentsAndAdvances,quarterlyNetPPE,quarterlyAccumulatedDepreciation,quarterlyGrossPPE,quarterlyCurrentAssets,quarterlyOtherCurrentAssets,quarterlyInventory,quarterlyAccountsReceivable,quarterlyCashCashEquivalentsAndShortTermInvestments,quarterlyOtherShortTermInvestments,quarterlyCashAndCashEquivalents",
-                FinancialsPeriod::Annual => "annualTotalAssets,annualStockholdersEquity,annualGainsLossesNotAffectingRetainedEarnings,annualRetainedEarnings,annualCapitalStock,annualTotalLiabilitiesNetMinorityInterest,annualTotalNonCurrentLiabilitiesNetMinorityInterest,annualOtherNonCurrentLiabilities,annualNonCurrentDeferredRevenue,annualNonCurrentDeferredTaxesLiabilities,annualLongTermDebt,annualCurrentLiabilities,annualOtherCurrentLiabilities,annualCurrentDeferredRevenue,annualCurrentAccruedExpenses,annualIncomeTaxPayable,annualAccountsPayable,annualCurrentDebt,annualTotalNonCurrentAssets,annualOtherNonCurrentAssets,annualOtherIntangibleAssets,annualGoodwill,annualInvestmentsAndAdvances,annualNetPPE,annualAccumulatedDepreciation,annualGrossPPE,annualCurrentAssets,annualOtherCurrentAssets,annualInventory,annualAccountsReceivable,annualCashCashEquivalentsAndShortTermInvestments,annualOtherShortTermInvestments,annualCashAndCashEquivalents",
-                FinancialsPeriod::Trailing => "trailingTotalAssets,trailingStockholdersEquity,trailingGainsLossesNotAffectingRetainedEarnings,trailingRetainedEarnings,trailingCapitalStock,trailingTotalLiabilitiesNetMinorityInterest,trailingTotalNonCurrentLiabilitiesNetMinorityInterest,trailingOtherNonCurrentLiabilities,trailingNonCurrentDeferredRevenue,trailingNonCurrentDeferredTaxesLiabilities,trailingLongTermDebt,trailingCurrentLiabilities,trailingOtherCurrentLiabilities,trailingCurrentDeferredRevenue,trailingCurrentAccruedExpenses,trailingIncomeTaxPayable,trailingAccountsPayable,trailingCurrentDebt,trailingTotalNonCurrentAssets,trailingOtherNonCurrentAssets,trailingOtherIntangibleAssets,trailingGoodwill,trailingInvestmentsAndAdvances,trailingNetPPE,trailingAccumulatedDepreciation,trailingGrossPPE,trailingCurrentAssets,trailingOtherCurrentAssets,trailingInventory,trailingAccountsReceivable,trailingCashCashEquivalentsAndShortTermInvestments,trailingOtherShortTermInvestments,trailingCashAndCashEquivalents",
+                FinancialsPeriod::Quarterly => "annualCurrentDebt,annualCashAndCashEquivalents",
+                FinancialsPeriod::Annual => "annualCurrentDebt,annualCashAndCashEquivalents",
+                FinancialsPeriod::Trailing => "trailingCurrentDebt,trailingCashAndCashEquivalents",
             });
             query.append_pair("merge", "false");
             query.append_pair("period1", "0");
@@ -122,15 +122,28 @@ impl YahooConnector {
         let mut value = send_request(&url.to_string()).await?;
         let mut value = value["timeseries"].take()["result"].take();
         let data = value.as_array().unwrap();
-        let mut fields = HashMap::new();
+        let mut reports = HashMap::<Date, FinancialReport>::new();
         for value in data {
             let key = value["meta"]["type"].as_array().unwrap().first().and_then(|v| v.as_str()).unwrap();
             let timestamp = value["timestamp"].as_array().cloned().unwrap_or_default().into_iter().map(|v| v.as_i64().unwrap()).map(|i| OffsetDateTime::from_unix_timestamp(i).unwrap());
-            let value = value[key].as_array().cloned().unwrap_or_default().into_iter().map(|v| v["reportedValue"]["raw"].as_f64().unwrap());
-            fields.insert(key.to_string(), timestamp.zip(value).collect());
+            let value = value[key].as_array().cloned().unwrap_or_default().into_iter().map(|v| v["reportedValue"]["raw"].as_f64());
+            for (timestamp, value) in timestamp.zip(value) {
+                let mut report = reports.entry(timestamp.date()).or_default();
+                if key.ends_with("CurrentDebt") {
+                    report.current_debt = value;
+                } else if key.ends_with("CashAndCashEquivalents") {
+                    report.cash_and_cash_equivalents = value;
+                }
+            }
         }
-        Ok(fields)
+        Ok(reports)
     }
+}
+
+#[derive(Default, Debug, Clone)]
+pub struct FinancialReport {
+    current_debt: Option<f64>,
+    cash_and_cash_equivalents: Option<f64>,
 }
 
 #[derive(Copy, Clone, Debug)]
