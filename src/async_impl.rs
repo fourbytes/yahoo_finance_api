@@ -1,5 +1,10 @@
+use std::collections::HashMap;
+
+use reqwest::Url;
 use time::{Date, OffsetDateTime, UtcOffset};
 use async_compat::CompatExt;
+
+use crate::financials::ReportedValue;
 
 use super::*;
 
@@ -94,6 +99,45 @@ impl YahooConnector {
         let result = self.search_ticker_opt(name).await?;
         Ok(YSearchResult::from_opt(&result))
     }
+
+    /// https://query1.finance.yahoo.com/ws/fundamentals-timeseries/v1/finance/timeseries/NFL.AX?lang=en-AU&region=AU&symbol=NFL.AX&padTimeSeries=true&type=quarterlyTotalAssets,trailingTotalAssets,quarterlyStockholdersEquity,trailingStockholdersEquity,quarterlyGainsLossesNotAffectingRetainedEarnings,trailingGainsLossesNotAffectingRetainedEarnings,quarterlyRetainedEarnings,trailingRetainedEarnings,quarterlyCapitalStock,trailingCapitalStock,quarterlyTotalLiabilitiesNetMinorityInterest,trailingTotalLiabilitiesNetMinorityInterest,quarterlyTotalNonCurrentLiabilitiesNetMinorityInterest,trailingTotalNonCurrentLiabilitiesNetMinorityInterest,quarterlyOtherNonCurrentLiabilities,trailingOtherNonCurrentLiabilities,quarterlyNonCurrentDeferredRevenue,trailingNonCurrentDeferredRevenue,quarterlyNonCurrentDeferredTaxesLiabilities,trailingNonCurrentDeferredTaxesLiabilities,quarterlyLongTermDebt,trailingLongTermDebt,quarterlyCurrentLiabilities,trailingCurrentLiabilities,quarterlyOtherCurrentLiabilities,trailingOtherCurrentLiabilities,quarterlyCurrentDeferredRevenue,trailingCurrentDeferredRevenue,quarterlyCurrentAccruedExpenses,trailingCurrentAccruedExpenses,quarterlyIncomeTaxPayable,trailingIncomeTaxPayable,quarterlyAccountsPayable,trailingAccountsPayable,quarterlyCurrentDebt,trailingCurrentDebt,quarterlyTotalNonCurrentAssets,trailingTotalNonCurrentAssets,quarterlyOtherNonCurrentAssets,trailingOtherNonCurrentAssets,quarterlyOtherIntangibleAssets,trailingOtherIntangibleAssets,quarterlyGoodwill,trailingGoodwill,quarterlyInvestmentsAndAdvances,trailingInvestmentsAndAdvances,quarterlyNetPPE,trailingNetPPE,quarterlyAccumulatedDepreciation,trailingAccumulatedDepreciation,quarterlyGrossPPE,trailingGrossPPE,quarterlyCurrentAssets,trailingCurrentAssets,quarterlyOtherCurrentAssets,trailingOtherCurrentAssets,quarterlyInventory,trailingInventory,quarterlyAccountsReceivable,trailingAccountsReceivable,quarterlyCashCashEquivalentsAndShortTermInvestments,trailingCashCashEquivalentsAndShortTermInvestments,quarterlyOtherShortTermInvestments,trailingOtherShortTermInvestments,quarterlyCashAndCashEquivalents,trailingCashAndCashEquivalents&merge=false&period1=493590046&period2=1667449537&corsDomain=au.finance.yahoo.com
+    pub async fn get_financials_timeseries(&self, symbol: &str, period: FinancialsPeriod) -> Result<HashMap<String, Vec<(OffsetDateTime, f64)>>, YahooError> {
+        let ts = OffsetDateTime::now_utc().unix_timestamp();
+        let mut url: Url = format!("https://query1.finance.yahoo.com/ws/fundamentals-timeseries/v1/finance/timeseries/{symbol}").parse().unwrap();
+        {
+            let mut query = url.query_pairs_mut();
+            query.append_pair("lang", "en-AU");
+            query.append_pair("region", "AU");
+            query.append_pair("symbol", symbol);
+            query.append_pair("padTimeSeries", "true");
+            query.append_pair("type", match period {
+                FinancialsPeriod::Quarterly => "quarterlyTotalAssets,quarterlyStockholdersEquity,quarterlyGainsLossesNotAffectingRetainedEarnings,quarterlyRetainedEarnings,quarterlyCapitalStock,quarterlyTotalLiabilitiesNetMinorityInterest,quarterlyTotalNonCurrentLiabilitiesNetMinorityInterest,quarterlyOtherNonCurrentLiabilities,quarterlyNonCurrentDeferredRevenue,quarterlyNonCurrentDeferredTaxesLiabilities,quarterlyLongTermDebt,quarterlyCurrentLiabilities,quarterlyOtherCurrentLiabilities,quarterlyCurrentDeferredRevenue,quarterlyCurrentAccruedExpenses,quarterlyIncomeTaxPayable,quarterlyAccountsPayable,quarterlyCurrentDebt,quarterlyTotalNonCurrentAssets,quarterlyOtherNonCurrentAssets,quarterlyOtherIntangibleAssets,quarterlyGoodwill,quarterlyInvestmentsAndAdvances,quarterlyNetPPE,quarterlyAccumulatedDepreciation,quarterlyGrossPPE,quarterlyCurrentAssets,quarterlyOtherCurrentAssets,quarterlyInventory,quarterlyAccountsReceivable,quarterlyCashCashEquivalentsAndShortTermInvestments,quarterlyOtherShortTermInvestments,quarterlyCashAndCashEquivalents",
+                FinancialsPeriod::Annual => "annualTotalAssets,annualStockholdersEquity,annualGainsLossesNotAffectingRetainedEarnings,annualRetainedEarnings,annualCapitalStock,annualTotalLiabilitiesNetMinorityInterest,annualTotalNonCurrentLiabilitiesNetMinorityInterest,annualOtherNonCurrentLiabilities,annualNonCurrentDeferredRevenue,annualNonCurrentDeferredTaxesLiabilities,annualLongTermDebt,annualCurrentLiabilities,annualOtherCurrentLiabilities,annualCurrentDeferredRevenue,annualCurrentAccruedExpenses,annualIncomeTaxPayable,annualAccountsPayable,annualCurrentDebt,annualTotalNonCurrentAssets,annualOtherNonCurrentAssets,annualOtherIntangibleAssets,annualGoodwill,annualInvestmentsAndAdvances,annualNetPPE,annualAccumulatedDepreciation,annualGrossPPE,annualCurrentAssets,annualOtherCurrentAssets,annualInventory,annualAccountsReceivable,annualCashCashEquivalentsAndShortTermInvestments,annualOtherShortTermInvestments,annualCashAndCashEquivalents",
+                FinancialsPeriod::Trailing => "trailingTotalAssets,trailingStockholdersEquity,trailingGainsLossesNotAffectingRetainedEarnings,trailingRetainedEarnings,trailingCapitalStock,trailingTotalLiabilitiesNetMinorityInterest,trailingTotalNonCurrentLiabilitiesNetMinorityInterest,trailingOtherNonCurrentLiabilities,trailingNonCurrentDeferredRevenue,trailingNonCurrentDeferredTaxesLiabilities,trailingLongTermDebt,trailingCurrentLiabilities,trailingOtherCurrentLiabilities,trailingCurrentDeferredRevenue,trailingCurrentAccruedExpenses,trailingIncomeTaxPayable,trailingAccountsPayable,trailingCurrentDebt,trailingTotalNonCurrentAssets,trailingOtherNonCurrentAssets,trailingOtherIntangibleAssets,trailingGoodwill,trailingInvestmentsAndAdvances,trailingNetPPE,trailingAccumulatedDepreciation,trailingGrossPPE,trailingCurrentAssets,trailingOtherCurrentAssets,trailingInventory,trailingAccountsReceivable,trailingCashCashEquivalentsAndShortTermInvestments,trailingOtherShortTermInvestments,trailingCashAndCashEquivalents",
+            });
+            query.append_pair("merge", "false");
+            query.append_pair("period1", "0");
+            query.append_pair("period2", &ts.to_string());
+        }
+        let mut value = send_request(&url.to_string()).await?;
+        let mut value = value["timeseries"].take()["result"].take();
+        let data = value.as_array().unwrap();
+        let mut fields = HashMap::new();
+        for value in data {
+            let key = value["meta"]["type"].as_array().unwrap().first().and_then(|v| v.as_str()).unwrap();
+            let timestamp = value["timestamp"].as_array().cloned().unwrap_or_default().into_iter().map(|v| v.as_i64().unwrap()).map(|i| OffsetDateTime::from_unix_timestamp(i).unwrap());
+            let value = value[key].as_array().cloned().unwrap_or_default().into_iter().map(|v| v["reportedValue"]["raw"].as_f64().unwrap());
+            fields.insert(key.to_string(), timestamp.zip(value).collect());
+        }
+        Ok(fields)
+    }
+}
+
+#[derive(Copy, Clone, Debug)]
+pub enum FinancialsPeriod {
+    Quarterly,
+    Annual,
+    Trailing
 }
 
 /// Send request to yahoo! finance server and transform response to JSON value
@@ -158,8 +202,9 @@ mod tests {
     #[test]
     fn test_get_financials() {
         let provider = YahooConnector::new();
-        for target in ["HNL.DE", "LCY.AX"] {
-            let _response = tokio_test::block_on(provider.get_financials(target)).unwrap();
+        for target in ["HNL.DE", "LCY.AX", "NFL.AX"] {
+            let response = tokio_test::block_on(provider.get_financials(target)).unwrap();
+            println!("{response:?}");
             // assert_ne!(response.shares_on_issue(), None);
         }
     }
@@ -167,8 +212,9 @@ mod tests {
     #[test]
     fn test_get_statistics() {
         let provider = YahooConnector::new();
-        for target in ["LEL.AX"] {
-            let _response = tokio_test::block_on(provider.get_statistics(target)).unwrap();
+        for target in ["LEL.AX", "NFL.AX"] {
+            let response = tokio_test::block_on(provider.get_statistics(target)).unwrap();
+            println!("{response:?}");
             // assert_ne!(response.shares_on_issue(), None);
         }
     }
@@ -300,4 +346,12 @@ mod tests {
         assert_eq!(&response.chart.result[0].meta.data_granularity, "1d");
     }
 
+    
+    #[test]
+    fn test_get_financials_timeseries() {
+        let provider = YahooConnector::new();
+        let response = tokio_test::block_on(provider.get_financials_timeseries("NFL.AX", FinancialsPeriod::Annual)).unwrap();
+        println!("{response:#?}");
+        let response = tokio_test::block_on(provider.get_financials_timeseries("NFL.AX", FinancialsPeriod::Quarterly)).unwrap();
+    }
 }

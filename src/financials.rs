@@ -3,7 +3,6 @@ use serde::Deserialize;
 use super::YahooError;
 
 time::serde::format_description!(iso8601_date, Date, "[year repr:full]-[month repr:numerical]-[day padding:zero]");
-
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "PascalCase")]
 pub struct YFinancialsResponse {

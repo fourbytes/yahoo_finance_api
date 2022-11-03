@@ -16,7 +16,7 @@ pub struct YStatisticsResponse {
 #[serde(rename_all = "camelCase")]
 pub struct YQuoteSummaryStore {
     pub default_key_statistics: KeyStatistics,
-    pub financial_data: FinancialData,
+    pub financial_data: Option<FinancialData>,
 }
 
 #[derive(Deserialize, Debug)]
