@@ -24,8 +24,8 @@ pub struct YQuoteSummaryStore {
 pub struct KeyStatistics {
     pub enterprise_value: Option<IntegerValue>,
     pub float_shares: Option<IntegerValue>,
-    pub held_percent_insiders: DecimalValue,
-    pub held_percent_institutions: DecimalValue,
+    pub held_percent_insiders: Option<DecimalValue>,
+    pub held_percent_institutions: Option<DecimalValue>,
     pub most_recent_quarter: OffsetDateTimeValue,
     pub net_income_to_common: IntegerValue,
     pub next_fiscal_year_end: OffsetDateTimeValue,
