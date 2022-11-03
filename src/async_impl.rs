@@ -111,7 +111,7 @@ impl YahooConnector {
             query.append_pair("symbol", symbol);
             query.append_pair("padTimeSeries", "true");
             query.append_pair("type", match period {
-                FinancialsPeriod::Quarterly => "annualCurrentDebt,annualCashAndCashEquivalents",
+                FinancialsPeriod::Quarterly => "quarterlyCurrentDebt,quarterlyCashAndCashEquivalents",
                 FinancialsPeriod::Annual => "annualCurrentDebt,annualCashAndCashEquivalents",
                 FinancialsPeriod::Trailing => "trailingCurrentDebt,trailingCashAndCashEquivalents",
             });
