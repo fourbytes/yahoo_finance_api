@@ -142,8 +142,8 @@ impl YahooConnector {
 
 #[derive(Default, Debug, Clone)]
 pub struct FinancialReport {
-    current_debt: Option<f64>,
-    cash_and_cash_equivalents: Option<f64>,
+    pub current_debt: Option<f64>,
+    pub cash_and_cash_equivalents: Option<f64>,
 }
 
 #[derive(Copy, Clone, Debug)]
